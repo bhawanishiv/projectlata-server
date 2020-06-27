@@ -1,0 +1,30 @@
+{
+    "name": "project-lata-server",
+    "version": "0.0.1",
+    "description": "Project LATA API Server",
+    "main": "server.js",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/project-lata/dev-server.git"
+    },
+    "scripts": {
+        "start": "nodemon server.js"
+    },
+    "keywords": [
+        "Project",
+        "LATA"
+    ],
+    "author": "Bhawani Shankar Bharti",
+    "license": "ISC",
+    "dependencies": {
+        "body-parser": "^1.19.0",
+        "config": "^3.3.1",
+        "cors": "^2.8.5",
+        "express": "^4.17.1",
+        "firebase-admin": "^8.12.1",
+        "morgan": "^1.10.0"
+    },
+    "engines": {
+        "node": "12.x"
+    }
+}
