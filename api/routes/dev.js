@@ -3,88 +3,114 @@ const db = admin.database();
 const devCheck = require('../middleware/dev');
 const router = require('express').Router();
 
-
 /**
- * Checking instance with provided instanceId as query parameter
+ * Checking instance with provided instanceId in body
  */
 router.post('/', devCheck, (req, res, next) => {
-    res.json(req.instance.val())
-});
-
-router.post('/set-readings/:pinNo', devCheck, (req, res, next) => {
-    const { pinNo } = req.params;
-    if (!pinNo) return res.status(404).json({ status: false, data: 'no pin found' });
-    const { value } = req.body;
-    if (!value) return res.status(404).json({ status: false, data: 'no value found' });
-    const { key } = req.instance;
-    db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
-        if (!snapshot.val()) return res.status(404).json({ status: false, data: 'no definition found' });
-        db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: new Date().toISOString() }).then(done => {
-            res.json({ status: true, data: 'added' })
-        });
-    })
-
-});
-
-router.post('/get-defs', devCheck, (req, res, next) => {
-    let defs = "{{D";
-    const { cpuId } = req.instance.val();
-    const { key } = req.instance;
-    if (!cpuId) return res.status(404).json({ status: false, data: 'nocpuid' });
-    db.ref(`cpus/${cpuId}`).once('value', (snapshot) => {
-        const { description } = snapshot.val();
-        if (!description) return res.status(404).json({ status: false, data: 'nodescription' });
-        const { pin_configuration } = description;
-        if (!pin_configuration) return res.status(404).json({ status: false, data: 'nopinconfiguration' });
-        sortedConfiguration = pin_configuration.sort((a, b) => a['pinNo'] - a['pinNo']);
-        db.ref(`pinDefinitions/${key}`).once('value', (defsSnapshot) => {
-            if (!defsSnapshot.val()) return res.status(404).json({ status: false, data: 'nopindefinitions' });
-            const definitions = defsSnapshot.val();
-            sortedConfiguration.forEach(config => {
-                let n = definitions.find(def => def.pinNo == config.pinNo);
-                if (n) {
-                    const { pinMode } = n;
-
-                    if (pinMode == "input") defs += "1";
-                    else if (pinMode == "output") defs += "0";
-                } else defs += "2";
-
+    const { reqType } = req.body;
+    if (!reqType) return res.status(404).send('error:no-req');
+    switch (reqType) {
+        case 'get-defs':
+            let defs = '{D';
+            getCPU(req, res, next, () => {
+                getPinDefinitions(req, res, next, () => {
+                    let sortedConfiguration = req.pin_configuration.sort((a, b) => a['pinNo'] - a['pinNo']);
+                    sortedConfiguration.forEach(config => {
+                        let result = req.definitions.find(def => def.pinNo == config.pinNo);
+                        if (result) {
+                            const { pinMode } = result;
+                            if (pinMode == "input") defs += '1';
+                            else if (pinMode == "output") defs += '1';
+                        } else defs += '2';
+                    });
+                    res.send(`${defs}}`);
+                })
             })
-            res.json({ data: `${defs}}}`, status: true });
-        })
+            break;
 
-    })
-});
-
-router.post('/get-cmds', devCheck, (req, res, next) => {
-    let cmds = "{{C";
-    const { cpuId } = req.instance.val();
-    const { key } = req.instance;
-    if (!cpuId) return res.status(404).json({ status: false, data: 'nocpuid' });
-    db.ref(`cpus/${cpuId}`).once('value', (snapshot) => {
-        const { description } = snapshot.val();
-        if (!description) return res.status(404).json({ status: false, data: 'nodescription' });
-        const { pin_configuration } = description;
-        if (!pin_configuration) return res.status(404).json({ status: false, data: 'nopinconfiguration' });
-        sortedConfiguration = pin_configuration.sort((a, b) => a['pinNo'] - a['pinNo']);
-        db.ref(`commands/${key}`).once('value', (cmdsSnapshopt) => {
-            if (!cmdsSnapshopt.val()) return res.status(404).json({ status: false, data: 'not found' });
-            let values = cmdsSnapshopt.val();
-            sortedConfiguration.forEach(config => {
-                let pin = Object.keys(values).find(pin => pin == config.pinNo);
-                if (pin) {
-                    let newCmd = 0;
-                    Object.keys(values[pin]).forEach(cmd => {
-                        newCmd = values[pin][cmd]['val'];
+        case 'get-cmds':
+            let cmds = '{C';
+            getCPU(req, res, next, () => {
+                getPinDefinitions(req, res, next, () => {
+                    getCommands(req, res, next, () => {
+                        let sortedConfiguration = req.pin_configuration.sort((a, b) => a['pinNo'] - a['pinNo']);
+                        let commands = req.commands;
+                        sortedConfiguration.forEach(config => {
+                            let pin = Object.keys(commands).find(pin => pin == config.pinNo);
+                            if (pin) {
+                                let newCmd = 0;
+                                Object.keys(commands[pin]).forEach(cmd => newCmd = commands[pin][cmd]['val'])
+                                cmds += newCmd;
+                            } else cmds += '2';
+                        })
+                        res.send(`${cmds}}`);
                     })
-                    cmds += newCmd;
-                } else cmds += "2";
+                })
+            });
+            break;
+
+        case 'set-readings':
+            const { value } = req.body;
+            if (!value) return res.status(404).send('error:no-value-found');
+            const { pinNo } = req.body;
+            if (!pinNo) return res.status(404).send('error:no-pin-found');
+            const { instance } = req;
+            if (!instance) return res.status(404).send('error:no-instance');
+            const { key } = instance;
+            if (!key) return res.status(404).send('error:no-instanceId');
+            db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
+                if (!snapshot.val()) return res.status(404).send('error:no-definition-found');
+                db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: new Date().toISOString() }).then(done => {
+                    res.send('success:added');
+                });
             })
-            res.json({ data: `${cmds}}}`, status: true });
-        })
-    })
+            break;
+    }
 });
 
+function getCPU(req, res, next, callBack) {
+    const { instance } = req;
+    if (!instance) return res.status(404).send('error:no-instance');
+    const { cpuId } = req.instance.val();
+    if (!cpuId) return res.status(404).send('error:no-cpuId');
+    db.ref(`cpus/${cpuId}`).once('value', (snapshot) => {
+        const cpu = snapshot.val();
+        if (!cpu) return res.status(404).send('error:no-cpu');
+        req.cpu = cpu;
+        callBack();
+    })
+}
+
+function getPinDefinitions(req, res, next, callBack) {
+    const { instance } = req;
+    if (!instance) return res.status(404).send('error:no-instance');
+    const { key } = instance;
+    if (!key) return res.status(404).send('error:no-instanceId');
+    const { cpu } = req;
+    if (!cpu) return res.status(404).send('error:no-cpu');
+    const { description } = cpu;
+    if (!description) return res.status(404).send('error:no-cpu-description');
+    const { pin_configuration } = description;
+    if (!pin_configuration) return res.status(404).send('error:no-pin-configuration');
+    req.pin_configuration = pin_configuration;
+    db.ref(`pinDefinitions/${key}`).once('value', (snapshot) => {
+        if (!snapshot.val()) return res.status(404).send('error:no-pin-definitions');
+        req.definitions = snapshot.val();
+        callBack();
+    });
+}
+
+function getCommands(req, res, next, callBack) {
+    const { instance } = req;
+    if (!instance) return res.status(404).send('error:no-instance');
+    const { key } = instance;
+    if (!key) return res.status(404).send('error:no-instanceId');
+    db.ref(`commands/${key}`).once('value', (snapshot) => {
+        if (!snapshot.val()) return res.status(404).send('error:no-cmd-found');
+        req.commands = snapshot.val();
+        callBack();
+    })
+}
 
 
 module.exports = router;
