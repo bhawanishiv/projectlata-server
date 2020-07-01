@@ -61,7 +61,7 @@ router.post('/', devCheck, (req, res, next) => {
             db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
                 if (!snapshot.val()) return res.status(404).send('error:no-definition-found');
                 db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: new Date().toISOString() }).then(done => {
-                    res.send('success:added');
+                    res.send('');
                 });
             })
             break;
