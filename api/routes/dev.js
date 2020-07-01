@@ -27,7 +27,7 @@ router.post('/set-readings/:pinNo', devCheck, (req, res, next) => {
 });
 
 router.post('/get-defs', devCheck, (req, res, next) => {
-    let defs = "D";
+    let defs = "{{D";
     const { cpuId } = req.instance.val();
     const { key } = req.instance;
     if (!cpuId) return res.status(404).json({ status: false, data: 'nocpuid' });
@@ -50,14 +50,14 @@ router.post('/get-defs', devCheck, (req, res, next) => {
                 } else defs += "2";
 
             })
-            res.json({ data: defs, status: true });
+            res.json({ data: `${defs}}}`, status: true });
         })
 
     })
 });
 
 router.post('/get-cmds', devCheck, (req, res, next) => {
-    let cmds = "C";
+    let cmds = "{{C";
     const { cpuId } = req.instance.val();
     const { key } = req.instance;
     if (!cpuId) return res.status(404).json({ status: false, data: 'nocpuid' });
@@ -80,7 +80,7 @@ router.post('/get-cmds', devCheck, (req, res, next) => {
                     cmds += newCmd;
                 } else cmds += "2";
             })
-            res.json({ data: cmds, status: true });
+            res.json({ data: `${cmds}}}`, status: true });
         })
     })
 });
