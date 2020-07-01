@@ -50,20 +50,24 @@ router.post('/', devCheck, (req, res, next) => {
             break;
 
         case 'set-readings':
-            const { value } = req.body;
-            if (!value) return res.status(404).send('error:no-value-found');
-            const { pinNo } = req.body;
-            if (!pinNo) return res.status(404).send('error:no-pin-found');
+            const { values } = req.body;
+            if (!values) return res.status(404).send('error:no-values-found');
             const { instance } = req;
             if (!instance) return res.status(404).send('error:no-instance');
             const { key } = instance;
             if (!key) return res.status(404).send('error:no-instanceId');
-            db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
-                if (!snapshot.val()) return res.status(404).send('error:no-definition-found');
-                db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: new Date().toISOString() }).then(done => {
-                    res.send('');
+            let time = new Date().toISOString();
+            values.forEach(reading => {
+                let { pinNo } = reading;
+                if (!pinNo) return;
+                let { value } = reading;
+                if (!value) return;
+                db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
+                    if (!snapshot.val()) return;
+                    db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(done => {});
                 });
-            })
+            });
+            res.send('success:done');
             break;
     }
 });
