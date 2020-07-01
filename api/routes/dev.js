@@ -20,7 +20,7 @@ router.post('/', devCheck, (req, res, next) => {
                         if (result) {
                             const { pinMode } = result;
                             if (pinMode == "input") defs += '1';
-                            else if (pinMode == "output") defs += '1';
+                            else if (pinMode == "output") defs += '0';
                         } else defs += '2';
                     });
                     res.send(`${defs}}`);
