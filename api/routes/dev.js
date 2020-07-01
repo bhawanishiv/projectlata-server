@@ -13,14 +13,14 @@ router.post('/', devCheck, (req, res, next) => {
 
 router.post('/set-readings/:pinNo', devCheck, (req, res, next) => {
     const { pinNo } = req.params;
-    if (!pinNo) return res.status(404).json({ status: false, msg: 'no pin found' });
+    if (!pinNo) return res.status(404).json({ status: false, data: 'no pin found' });
     const { value } = req.body;
-    if (!value) return res.status(404).json({ status: false, msg: 'no value found' });
+    if (!value) return res.status(404).json({ status: false, data: 'no value found' });
     const { key } = req.instance;
     db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
-        if (!snapshot.val()) return res.status(404).json({ status: false, msg: 'no definition found' });
+        if (!snapshot.val()) return res.status(404).json({ status: false, data: 'no definition found' });
         db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: new Date().toISOString() }).then(done => {
-            res.json({ status: true, msg: 'added' })
+            res.json({ status: true, data: 'added' })
         });
     })
 
@@ -30,15 +30,15 @@ router.post('/get-defs', devCheck, (req, res, next) => {
     let defs = "D";
     const { cpuId } = req.instance.val();
     const { key } = req.instance;
-    if (!cpuId) return res.status(404).json({ status: false, msg: 'nocpuid' });
+    if (!cpuId) return res.status(404).json({ status: false, data: 'nocpuid' });
     db.ref(`cpus/${cpuId}`).once('value', (snapshot) => {
         const { description } = snapshot.val();
-        if (!description) return res.status(404).json({ status: false, msd: 'nodescription' });
+        if (!description) return res.status(404).json({ status: false, data: 'nodescription' });
         const { pin_configuration } = description;
-        if (!pin_configuration) return res.status(404).json({ status: false, msd: 'nopinconfiguration' });
+        if (!pin_configuration) return res.status(404).json({ status: false, data: 'nopinconfiguration' });
         sortedConfiguration = pin_configuration.sort((a, b) => a['pinNo'] - a['pinNo']);
         db.ref(`pinDefinitions/${key}`).once('value', (defsSnapshot) => {
-            if (!defsSnapshot.val()) return res.status(404).json({ status: false, msg: 'nopindefinitions' });
+            if (!defsSnapshot.val()) return res.status(404).json({ status: false, data: 'nopindefinitions' });
             const definitions = defsSnapshot.val();
             sortedConfiguration.forEach(config => {
                 let n = definitions.find(def => def.pinNo == config.pinNo);
@@ -60,15 +60,15 @@ router.post('/get-cmds', devCheck, (req, res, next) => {
     let cmds = "C";
     const { cpuId } = req.instance.val();
     const { key } = req.instance;
-    if (!cpuId) return res.status(404).json({ status: false, msg: 'nocpuid' });
+    if (!cpuId) return res.status(404).json({ status: false, data: 'nocpuid' });
     db.ref(`cpus/${cpuId}`).once('value', (snapshot) => {
         const { description } = snapshot.val();
-        if (!description) return res.status(404).json({ status: false, msd: 'nodescription' });
+        if (!description) return res.status(404).json({ status: false, data: 'nodescription' });
         const { pin_configuration } = description;
-        if (!pin_configuration) return res.status(404).json({ status: false, msd: 'nopinconfiguration' });
+        if (!pin_configuration) return res.status(404).json({ status: false, data: 'nopinconfiguration' });
         sortedConfiguration = pin_configuration.sort((a, b) => a['pinNo'] - a['pinNo']);
         db.ref(`commands/${key}`).once('value', (cmdsSnapshopt) => {
-            if (!cmdsSnapshopt.val()) return res.status(404).json({ status: false, msg: 'not found' });
+            if (!cmdsSnapshopt.val()) return res.status(404).json({ status: false, data: 'not found' });
             let values = cmdsSnapshopt.val();
             sortedConfiguration.forEach(config => {
                 let pin = Object.keys(values).find(pin => pin == config.pinNo);
