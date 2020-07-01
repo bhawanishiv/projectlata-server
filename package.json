@@ -8,7 +8,7 @@
         "url": "https://github.com/project-lata/dev-server.git"
     },
     "scripts": {
-        "start": "nodemon server.js"
+        "start": "node server.js"
     },
     "keywords": [
         "Project",
