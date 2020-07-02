@@ -70,7 +70,6 @@ router.post('/', devCheck, (req, res, next) => {
                     }).catch(error => done = false);
                 });
             });
-            console.log(done)
             res.status(404).send(done ? 'sucess:done' : 'error:unknown');
             break;
     }
