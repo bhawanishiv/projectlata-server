@@ -50,6 +50,7 @@ router.post('/', devCheck, (req, res, next) => {
             break;
 
         case 'set-readings':
+            let done = false;
             const { values } = req.body;
             if (!values) return res.status(404).send('error:no-values-found');
             const { instance } = req;
@@ -65,10 +66,12 @@ router.post('/', devCheck, (req, res, next) => {
                 db.ref(`pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
                     if (!snapshot.val()) return;
                     db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(success => {
-                        res.send('success:done');
-                    }).catch(error => res.status(404).send(error))
+                        done = true;
+                    }).catch(error => done = false);
                 });
             });
+            console.log(done)
+            res.status(404).send(done ? 'sucess:done' : 'error:unknown');
             break;
     }
 });
