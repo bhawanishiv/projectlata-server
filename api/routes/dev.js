@@ -64,10 +64,11 @@ router.post('/', devCheck, (req, res, next) => {
                 if (!value) return;
                 db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
                     if (!snapshot.val()) return;
-                    db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(done => {});
+                    db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(done => {}).then(success => {
+                        res.send('success:done');
+                    }).catch(error => res.send(error))
                 });
             });
-            res.send('success:done');
             break;
     }
 });

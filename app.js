@@ -6,10 +6,10 @@ const config = require('config');
 const cors = require('cors');
 const admin = require('firebase-admin');
 
+app.use(cors());
 app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
-app.use(cors());
 
 
 const serviceAccount = require('./project-lata-firebase-adminsdk-t3zqd-bf2be61d49.json');
