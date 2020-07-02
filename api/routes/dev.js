@@ -63,14 +63,16 @@ router.post('/', devCheck, (req, res, next) => {
                 if (!pinNo) return;
                 let { value } = reading;
                 if (!value) return;
-                db.ref(`pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
+                db.ref(`pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', async(snapshot) => {
                     if (!snapshot.val()) return;
-                    db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(success => {
-                        done = true;
-                    }).catch(error => done = false);
+                    const result = await db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time });
+                    let index = values.findIndex(x => x.pinNo == pinNo);
+                    if (index == (values.length - 1)) {
+                        if (result) return res.send('success:done');
+                        return res.status(404).send('error:unknown');
+                    }
                 });
             });
-            res.status(404).send(done ? 'sucess:done' : 'error:unknown');
             break;
     }
 });
