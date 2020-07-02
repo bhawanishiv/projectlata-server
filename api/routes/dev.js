@@ -6,7 +6,7 @@ const router = require('express').Router();
 /**
  * Checking instance with provided instanceId in body
  */
-router.post('/', devCheck, (req, res, next) => {
+router.post('/', devCheck, async(req, res, next) => {
     const { reqType } = req.body;
     if (!reqType) return res.status(404).send('error:no-req');
     switch (reqType) {
