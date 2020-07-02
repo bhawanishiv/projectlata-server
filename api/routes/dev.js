@@ -62,7 +62,7 @@ router.post('/', devCheck, (req, res, next) => {
                 if (!pinNo) return;
                 let { value } = reading;
                 if (!value) return;
-                db.ref(`/pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
+                db.ref(`pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', (snapshot) => {
                     if (!snapshot.val()) return;
                     db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(done => {}).then(success => {
                         res.send('success:done');
