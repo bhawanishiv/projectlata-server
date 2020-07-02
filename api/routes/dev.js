@@ -66,7 +66,7 @@ router.post('/', devCheck, (req, res, next) => {
                     if (!snapshot.val()) return;
                     db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time }).then(done => {}).then(success => {
                         res.send('success:done');
-                    }).catch(error => res.send(error))
+                    }).catch(error => res.status(404).send(error))
                 });
             });
             break;
