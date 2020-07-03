@@ -6,7 +6,7 @@ const router = require('express').Router();
 /**
  * Checking instance with provided instanceId in body
  */
-router.post('/', devCheck, async(req, res, next) => {
+router.post('/', devCheck, (req, res, next) => {
     const { reqType } = req.body;
     if (!reqType) return res.status(404).send('error:no-req');
     switch (reqType) {
@@ -50,32 +50,25 @@ router.post('/', devCheck, async(req, res, next) => {
             break;
 
         case 'set-readings':
-            let done = false;
-            const { values } = req.body;
-            if (!values) return res.status(404).send('error:no-values-found');
+            const { value } = req.body;
+            if (value == undefined || !value == null) return res.status(404).send('error:no-value-found');
+            const { pinNo } = req.body;
+            if (!pinNo) return res.status(404).send('error:no-pinNo-found');
             const { instance } = req;
             if (!instance) return res.status(404).send('error:no-instance');
             const { key } = instance;
             if (!key) return res.status(404).send('error:no-instanceId');
             let time = new Date().toISOString();
-            values.forEach(reading => {
-                let { pinNo } = reading;
-                if (!pinNo) return;
-                let { value } = reading;
-                if (!value) return;
-                db.ref(`pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', async(snapshot) => {
-                    if (!snapshot.val()) return;
-                    const result = await db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time });
-                    let index = values.findIndex(x => x.pinNo == pinNo);
-                    if (index == (values.length - 1)) {
-                        if (result) return res.send('success:done');
-                        return res.status(404).send('error:unknown');
-                    }
-                });
+            db.ref(`pinDefinitions/${key}`).orderByChild('pinNo').equalTo(pinNo).once('value', async(snapshot) => {
+                if (!snapshot.val()) return res.status(404).send('error:no-pin-definition-found');
+                const result = await db.ref(`readings/${key}/${pinNo}`).push({ reading: value, time: time })
+                if (result) return res.send('success:done');
+                return res.status(500).send('error:unknown');
             });
             break;
     }
 });
+
 
 function getCPU(req, res, next, callBack) {
     const { instance } = req;
