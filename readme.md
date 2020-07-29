@@ -1,4 +1,4 @@
-#Project LATA - Server
+# Project LATA - Server
 
 API based server built using Node.js.
 
@@ -10,15 +10,14 @@ Base url: https://projectlata.heroku.com/
 3. Get commands for specific instance
 4. Download Board definitions by API
 
-
-## Get definitions
-
-### Query Parameters
+## API
+### Get definitions
+#### Query Parameters
 ```
 reqType=get-defs
 ```
 
-### Request body:
+#### Request body:
 ```
 {
     "instanceId":"your-instanceId"
