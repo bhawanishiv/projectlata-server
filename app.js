@@ -11,8 +11,8 @@ app.use(morgan('dev'));
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
-
-const serviceAccount = require('./project-lata-firebase-adminsdk-t3zqd-bf2be61d49.json');
+//Todo: redquir firebae-admin-sdk.json file here
+// const serviceAccount = require('route-to-firebase-admin-sdk-credentials.json');
 admin.initializeApp({
     credential: admin.credential.cert(serviceAccount),
     databaseURL: "https://project-lata.firebaseio.com"

@@ -11,7 +11,7 @@ Base url: https://projectlata.heroku.com/
 4. Download Board definitions by API
 
 ## API
-### Get definitions
+### 1. Get definitions
 #### API URL
 POST /dev
 
@@ -27,7 +27,7 @@ reqType=get-defs
 }
 ```
 
-### Get commands
+### 2. Get commands
 #### API URL
 POST /dev
 
@@ -42,7 +42,7 @@ reqType=get-cmds
     "instanceId":"your-instanceId"
 }
 ```
-### Set  readings
+### 3. Set readings
 #### API URL
 POST /dev
 
