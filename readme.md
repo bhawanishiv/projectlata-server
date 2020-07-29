@@ -12,6 +12,9 @@ Base url: https://projectlata.heroku.com/
 
 ## API
 ### Get definitions
+#### API URL
+POST /dev
+
 #### Query Parameters
 ```
 reqType=get-defs
@@ -21,5 +24,38 @@ reqType=get-defs
 ```
 {
     "instanceId":"your-instanceId"
+}
+```
+
+### Get commands
+#### API URL
+POST /dev
+
+#### Query Parameters
+```
+reqType=get-cmds
+```
+
+#### Request body:
+```
+{
+    "instanceId":"your-instanceId"
+}
+```
+### Set  readings
+#### API URL
+POST /dev
+
+#### Query Parameters
+```
+reqType=set-readings
+```
+
+#### Request body:
+```
+{
+    "instanceId":"your-instanceId",
+    "value":1.0,
+    "pinNo:"A0"
 }
 ```
